@@ -47,29 +47,15 @@ public:
         MccMnc &operator=(const MccMnc &other) { this->mcc = other.mcc; this->mnc = other.mnc; this->twoDigitMnc = other.twoDigitMnc; return *this; };
 
         bool operator==(const MccMnc &other) const { return this->mcc == other.mcc && this->mnc == other.mnc && this->twoDigitMnc == other.twoDigitMnc;; };
-        
-        String toString() {
-            if (twoDigitMnc) {
-                return String::format("%03d%02d", mcc, mnc);                
-            }
-            else {
-                return String::format("%03d%03d", mcc, mnc);
-            }
-        }
 
-        void fromString(const char *str) {
-            mcc = mnc = 0;
-            twoDigitMnc = false;
+        void clear() { mcc = mnc = 0; twoDigitMnc = false; };
 
-            size_t len = strlen(str);
-            if (len == 5) {
-                twoDigitMnc = true;
-                sscanf(str, "%03d%02d", &mcc, &mnc);
-            }
-            else if (len == 6) {
-                sscanf(str, "%03d%03d", &mcc, &mnc);
-            }
-        }
+        bool isClear() const { return mcc == 0 && mnc == 0; };
+
+        String toString();
+
+        void fromString(const char *str);
+
 
     private:
         int mcc = 0;
@@ -79,6 +65,17 @@ public:
 
     class FPLMN {
     public:
+        FPLMN() {};
+        virtual ~FPLMN() {};
+
+        FPLMN(const FPLMN &other) { *this = other; };
+        FPLMN &operator=(const FPLMN &other);
+
+        void clear();
+
+        bool isClear() const;
+
+        bool contains(MccMnc value) const;
 
     private:
         static const size_t kNetworksMaxSize = 4;
@@ -113,19 +110,19 @@ public:
      * 
      * The mutex is not recursive so do not lock it within a locked section.
      */
-    void lock() { os_mutex_lock(mutex); };
+    void lock() { mutex.lock(); };
 
     /**
      * @brief Attempts to lock the mutex that protects shared resources
      * 
      * @return true if the mutex was locked or false if it was busy already.
      */
-    bool tryLock() { return os_mutex_trylock(mutex); };
+    bool tryLock() { return mutex.try_lock(); };
 
     /**
      * @brief Unlocks the mutex that protects shared resources
      */
-    void unlock() { os_mutex_unlock(mutex); };
+    void unlock() { mutex.unlock(); };
 
 
 protected:
@@ -156,7 +153,7 @@ protected:
      * 
      * This is initialized in setup() so make sure you call the setup() method from the global application setup.
      */
-    os_mutex_t mutex = 0;
+    Mutex mutex;
 
     /**
      * @brief Singleton instance of this class

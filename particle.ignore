@@ -1,0 +1,4 @@
+docs/**/*.*
+more-tests/**/*.*
+automated-test/**/*.*
+target/**/*.*
