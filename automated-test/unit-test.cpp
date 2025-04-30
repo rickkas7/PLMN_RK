@@ -174,9 +174,36 @@ void testMccMnc() {
 	}
 }
 
+void testList() {
+	{
+		PLMN_RK::PLMNList list;
+
+		assertInt("", list.isClear(), 1);
+		assertInt("", list.getNumEntries(), 0);
+		assertStr("", list.toString(), "FFFFFFFFFFFFFFFFFFFFFFFF");
+	}
+	{
+		PLMN_RK::PLMNList list;
+		assertInt("", list.add(PLMN_RK::MccMnc("310410")), 1);
+		assertInt("", list.isClear(), 0);
+		assertInt("", list.getNumEntries(), 1);
+		assertStr("", list.toString(), "130014FFFFFFFFFFFFFFFFFF");
+
+		assertInt("", list.add(PLMN_RK::MccMnc("310410")), 1);
+		assertInt("", list.getNumEntries(), 1);
+		assertStr("", list.toString(), "130014FFFFFFFFFFFFFFFFFF");
+
+		assertInt("", list.add(PLMN_RK::MccMnc("50593")), 1);
+		assertInt("", list.getNumEntries(), 2);
+		assertStr("", list.toString(), "13001405F539FFFFFFFFFFFF");
+
+	}
+
+}
 
 int main(int argc, char *argv[]) {
 	testMccMnc();
+	testList();
 
 	return 0;
 }

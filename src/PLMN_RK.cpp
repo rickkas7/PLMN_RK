@@ -73,7 +73,7 @@ String PLMN_RK::MccMnc::toPLMN() const {
         result = resultArray;
     }
     else {
-        result = "ffffff";
+        result = "FFFFFF";
     }
 
     return result;
@@ -82,7 +82,7 @@ String PLMN_RK::MccMnc::toPLMN() const {
 void PLMN_RK::MccMnc::fromPLMN(const char *str) {
     clear();
 
-    if (strcmp(str, "ffffff") == 0) {
+    if (strcmp(str, "FFFFFF") == 0) {
         return;
     }
 
@@ -120,7 +120,7 @@ void PLMN_RK::MccMnc::fromPLMN(const char *str) {
 // PLMNList
 //
 PLMN_RK::PLMNList &PLMN_RK::PLMNList::operator=(const PLMNList &other) {
-    for(size_t ii = 0; ii < kNetworksMaxSize; ii++) {
+    for(size_t ii = 0; ii < kPLMNListMaxEntries; ii++) {
         networks[ii] = other.networks[ii];
     }
     return *this;
@@ -128,13 +128,13 @@ PLMN_RK::PLMNList &PLMN_RK::PLMNList::operator=(const PLMNList &other) {
 
 
 void PLMN_RK::PLMNList::clear() {
-    for(size_t ii = 0; ii < kNetworksMaxSize; ii++) {
+    for(size_t ii = 0; ii < kPLMNListMaxEntries; ii++) {
         networks[ii].clear();
     }
 }
 
 bool PLMN_RK::PLMNList::isClear() const {
-    for(size_t ii = 0; ii < kNetworksMaxSize; ii++) {
+    for(size_t ii = 0; ii < kPLMNListMaxEntries; ii++) {
         if (!networks[ii].isClear()) {
             return false;
         }
@@ -142,8 +142,20 @@ bool PLMN_RK::PLMNList::isClear() const {
     return true;
 }
 
+size_t PLMN_RK::PLMNList::getNumEntries() const {
+    size_t result = 0;
+
+    for(size_t ii = 0; ii < kPLMNListMaxEntries; ii++) {
+        if (!networks[ii].isClear()) {
+            result++;
+        }
+    }
+    return result;
+}
+
+
 bool PLMN_RK::PLMNList::contains(MccMnc value) const {
-    for(size_t ii = 0; ii < kNetworksMaxSize; ii++) {
+    for(size_t ii = 0; ii < kPLMNListMaxEntries; ii++) {
         if (networks[ii] == value) {
             return true;
         }
@@ -151,3 +163,37 @@ bool PLMN_RK::PLMNList::contains(MccMnc value) const {
     return false;
 }
 
+bool PLMN_RK::PLMNList::add(MccMnc value) {
+    if (!contains(value)) {
+        for(size_t ii = 0; ii < kPLMNListMaxEntries; ii++) {
+            if (networks[ii].isClear()) {
+                networks[ii] = value;
+                return true;
+            }
+        }
+        return false;
+    }
+    return true;
+}
+
+
+String PLMN_RK::PLMNList::toString() const {
+    String result;
+
+    for(size_t ii = 0; ii < kPLMNListMaxEntries; ii++) {
+        result += networks[ii].toPLMN();
+    }
+
+    return result;
+}
+
+
+
+void PLMN_RK::PLMNList::fromString(const char *str) {
+    if (str && strlen(str) == kPLMNListSize) {
+        for(size_t ii = 0; ii < kPLMNListMaxEntries; ii++) {
+            String s(&str[ii * kPLMNSize], kPLMNSize);
+            networks[ii].fromPLMN(s);
+        }
+    }
+}
