@@ -188,6 +188,7 @@ void testList() {
 		assertInt("", list.isClear(), 0);
 		assertInt("", list.getNumEntries(), 1);
 		assertStr("", list.toString(), "130014FFFFFFFFFFFFFFFFFF");
+		assertInt("", list.findIndex(PLMN_RK::MccMnc("310410")), 0);
 
 		assertInt("", list.add(PLMN_RK::MccMnc("310410")), 1);
 		assertInt("", list.getNumEntries(), 1);
@@ -196,18 +197,56 @@ void testList() {
 		assertInt("", list.add(PLMN_RK::MccMnc("50593")), 1);
 		assertInt("", list.getNumEntries(), 2);
 		assertStr("", list.toString(), "13001405F539FFFFFFFFFFFF");
+		assertInt("", list.findIndex(PLMN_RK::MccMnc("50593")), 1);
 
 
 		assertInt("", list.add(PLMN_RK::MccMnc("405820")), 1);
 		assertInt("", list.getNumEntries(), 3);
 		assertStr("", list.toString(), "13001405F539040528FFFFFF");
+		assertInt("", list.findIndex(PLMN_RK::MccMnc("405820")), 2);
 
 		assertInt("", list.add(PLMN_RK::MccMnc("405803")), 1);
 		assertInt("", list.getNumEntries(), 4);
 		assertStr("", list.toString(), "13001405F539040528043508");
+		assertInt("", list.findIndex(PLMN_RK::MccMnc("405803")), 3);
 
 		assertInt("", list.add(PLMN_RK::MccMnc("40444")), 0);
 		assertInt("", list.getNumEntries(), 4);
+		assertInt("", list.findIndex(PLMN_RK::MccMnc("40444")), -1);
+
+		PLMN_RK::PLMNList list1 = list;
+		assertInt("", list1.findIndex(PLMN_RK::MccMnc("310410")), 0);
+		assertInt("", list1.findIndex(PLMN_RK::MccMnc("50593")), 1);
+		assertInt("", list1.findIndex(PLMN_RK::MccMnc("405820")), 2);
+		assertInt("", list1.findIndex(PLMN_RK::MccMnc("405803")), 3);
+		assertInt("", list1.getNumEntries(), 4);
+		assertStr("", list1.toString(), "13001405F539040528043508");
+
+
+		list1.remove(PLMN_RK::MccMnc("310410"));
+		assertInt("", list1.findIndex(PLMN_RK::MccMnc("50593")), 0);
+		assertInt("", list1.findIndex(PLMN_RK::MccMnc("405820")), 1);
+		assertInt("", list1.findIndex(PLMN_RK::MccMnc("405803")), 2);
+		assertInt("", list1.getNumEntries(), 3);
+		assertStr("", list1.toString(), "05F539040528043508FFFFFF");
+
+		list1.remove(PLMN_RK::MccMnc("405803"));
+		assertInt("", list1.getNumEntries(), 2);
+		assertInt("", list1.findIndex(PLMN_RK::MccMnc("50593")), 0);
+		assertInt("", list1.findIndex(PLMN_RK::MccMnc("405820")), 1);
+		assertInt("", list1.findIndex(PLMN_RK::MccMnc("405803")), -1);
+		assertStr("", list1.toString(), "05F539040528FFFFFFFFFFFF");
+
+		list1.remove(1);
+		assertInt("", list1.getNumEntries(), 1);
+		assertInt("", list1.findIndex(PLMN_RK::MccMnc("50593")), 0);
+		assertStr("", list1.toString(), "05F539FFFFFFFFFFFFFFFFFF");
+
+		list1.remove(0);
+		assertInt("", list1.getNumEntries(), 0);
+		assertInt("", list1.isClear(), 1);
+		assertStr("", list1.toString(), "FFFFFFFFFFFFFFFFFFFFFFFF");
+
 
 	}
 

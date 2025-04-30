@@ -177,6 +177,40 @@ bool PLMN_RK::PLMNList::add(MccMnc value) {
 }
 
 
+ssize_t PLMN_RK::PLMNList::findIndex(MccMnc value) const {
+    for(size_t ii = 0; ii < kPLMNListMaxEntries; ii++) {
+        if (networks[ii] == value) {
+            return ii;
+        }
+    }
+
+    return -1;
+}
+
+bool PLMN_RK::PLMNList::remove(MccMnc value) {
+    ssize_t index = findIndex(value);
+    if (index >= 0) {
+        return remove(index);
+    }
+    else {
+        return false;
+    }
+}
+
+
+bool PLMN_RK::PLMNList::remove(size_t index) {
+    if (index >= kPLMNListMaxEntries) {
+        return false;
+    }
+    for(size_t ii = index; ii < (kPLMNListMaxEntries - 1); ii++) {
+        networks[ii] = networks[ii + 1];
+    }
+    networks[kPLMNListMaxEntries -1].clear();
+
+    return true;
+}
+
+
 String PLMN_RK::PLMNList::toString() const {
     String result;
 

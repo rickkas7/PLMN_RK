@@ -228,6 +228,15 @@ public:
         bool contains(MccMnc value) const;
 
         /**
+         * @brief Get the MCC-MNC at a specific index of the object.
+         * 
+         * @param index 0-based index. Must be 0 <= index < kPLMNListMaxEntries. Invalid values will crash.
+         * @return MccMnc Copy of 
+         */
+        MccMnc getAt(size_t index) const { return networks[index]; };
+
+        /**
+         * 
          * @brief Add an MCC-MNC to the list if it does not exist and there is space
          * 
          * @param value 
@@ -235,6 +244,30 @@ public:
          * @return false List was full
          */
         bool add(MccMnc value);
+
+        /**
+         * @brief Find the index (0-based) of a list item from its MCC-MNC
+         * 
+         * @param value 
+         * @return size_t index (0-based) or -1 if not found
+         */
+        ssize_t findIndex(MccMnc value) const;
+
+        /**
+         * @brief Remove a MCC-MNC from the list
+         * 
+         * @param value 
+         */
+        bool remove(MccMnc value);
+
+        /**
+         * @brief Remove an entry from the list by its 0-based index
+         * 
+         * @param index 
+         */
+        bool remove(size_t index);
+
+
 
         /**
          * @brief Convert to a string to 24 digit string containing a FPLMN list
