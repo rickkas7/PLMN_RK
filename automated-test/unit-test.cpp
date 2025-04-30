@@ -62,10 +62,19 @@ void testMccMnc() {
 		assertInt("t3b mnc", t3b.getMnc(), 44);
 		assertInt("t3b", t3b == t3, 1);
 
+		PLMN_RK::MccMnc t3c;
+		t3c.fromPLMN("04F444");
+		assertInt("t3c mcc", t3c.getMcc(), 404);
+		assertInt("t3c mnc", t3c.getMnc(), 44);
+		assertInt("t3c 2-digit", t3c.getTwoDigitMnc(), 1);
+		assertInt("t3c", t3c == t3, 1);
+
 		assertStr("t3", t3.toPLMN(), "04F444");
 
 
 		// 04F444 -> 40444 -> Spice telecomm
+		// abcdef    badfec
+		// 012345    103542
 	}
 	{
 		PLMN_RK::MccMnc t4(405, 803);
@@ -79,9 +88,17 @@ void testMccMnc() {
 		assertInt("t4b mnc", t4b.getMnc(), 803);
 		assertInt("t4b", t4b == t4, 1);
 
+		PLMN_RK::MccMnc t4c;
+		t4c.fromPLMN("043508");
+		assertInt("t4c mcc", t4c.getMcc(), 405);
+		assertInt("t4c mnc", t4c.getMnc(), 803);
+		assertInt("t4c", t4c == t4, 1);
+
+	
 		assertStr("t4", t4.toPLMN(), "043508");
 
 		// 043508 -> 405803 -> Airtel
+		// abcdef    badfec
 	}
 	{
 		PLMN_RK::MccMnc t5(405, 820);
@@ -95,7 +112,16 @@ void testMccMnc() {
 		assertInt("t5b", t5b == t5, 1);
 
 		assertStr("t5", t5.toPLMN(), "040528");
-		// 040528 - > 405820 -> uninor
+
+		PLMN_RK::MccMnc t5c;
+		t5c.fromPLMN("040528");
+		assertInt("t5c mcc", t5c.getMcc(), 405);
+		assertInt("t5c mnc", t5c.getMnc(), 820);
+		assertInt("t5c", t5c == t5, 1);
+
+		// 040528 -> 405820 -> uninor
+		// abcdef    badfec
+		// 012345    103542
 	}
 	{
 		PLMN_RK::MccMnc t6(405, 34);
@@ -108,8 +134,43 @@ void testMccMnc() {
 		assertInt("t6b mnc", t6b.getMnc(), 34);
 		assertInt("t6b", t6b == t6, 1);
 
+		PLMN_RK::MccMnc t6c;
+		t6c.fromPLMN("044530");
+		assertInt("t6c mcc", t6c.getMcc(), 405);
+		assertInt("t6c mnc", t6c.getMnc(), 34);
+		assertInt("t6c", t6c == t6, 1);
+
+
 		// 044530 -> 405034 -> unknown
+		// abcdef    badfec
 		assertStr("t6", t6.toPLMN(), "044530");
+	}
+
+	// Examples from: https://nickvsnetworking.com/plmn-identifier-calculation-mcc-mnc-to-plmn/
+	// EncodePLMN('505', '93') DecodePLMN("05f539")
+	// EncodePLMN('310', '410') DecodePLMN("130014")
+	{
+		PLMN_RK::MccMnc t7(505, 93);
+		t7.withTwoDigitMnc(true);
+		assertStr("t7", t7.toPLMN(), "05F539");
+
+		PLMN_RK::MccMnc t7c;
+		t7c.fromPLMN("05F539");
+		assertInt("t7c mcc", t7c.getMcc(), 505);
+		assertInt("t7c mnc", t7c.getMnc(), 93);
+		assertInt("t7c", t7c == t7, 1);
+
+	}
+	{
+		PLMN_RK::MccMnc t8(310, 410);
+		assertStr("t8", t8.toPLMN(), "130014");
+
+		PLMN_RK::MccMnc t8c;
+		t8c.fromPLMN("130014");
+		assertInt("t8c mcc", t8c.getMcc(), 310);
+		assertInt("t8c mnc", t8c.getMnc(), 410);
+		assertInt("t8c", t8c == t8, 1);
+
 	}
 }
 

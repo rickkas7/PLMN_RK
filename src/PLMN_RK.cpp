@@ -80,27 +80,34 @@ String PLMN_RK::MccMnc::toPLMN() const {
 }
 
 void PLMN_RK::MccMnc::fromPLMN(const char *str) {
-    // plmn abcdef -> bafced
     clear();
 
     if (strcmp(str, "ffffff") == 0) {
+        return;
     }
-    else
-    if (strlen(str) == 6) {
+
+    String s = str;
+    while(s.length() < 6) {
+        s = "0" + s;
+    }
+
+    if (s.length() == 6) {
+		// abcdef    badfec
+		// 012345    103542
         char mccStr[4] = {0};
         char mncStr[4] = {0};
 
-        mccStr[0] = str[1];
-        mccStr[1] = str[0];
-        mccStr[2] = str[5];
-        mncStr[0] = str[2];
-        mncStr[1] = str[4];
+        mccStr[0] = s.charAt(1);
+        mccStr[1] = s.charAt(0); 
+        mccStr[2] = s.charAt(3);
+        mncStr[0] = s.charAt(5);
+        mncStr[1] = s.charAt(4);
 
-        if (str[3] == 'f' || str[3] == 'F') {
+        if (s.charAt(2) == 'F' || s.charAt(2) == 'f') {
             twoDigitMnc = true;
         }
         else {
-            mccStr[3] = str[3];            
+            mncStr[2] = s.charAt(2);
         }
         mcc = atoi(mccStr);
         mnc = atoi(mncStr);
