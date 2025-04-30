@@ -5,12 +5,6 @@
 
 /**
  * This class is a singleton; you do not create one as a global, on the stack, or with new.
- * 
- * From global application setup you must call:
- * PLMN_RK::instance().setup();
- * 
- * From global application loop you must call:
- * PLMN_RK::instance().loop();
  */
 class PLMN_RK {
 public:
@@ -116,7 +110,24 @@ public:
          */
         MccMnc &operator=(const MccMnc &other) { this->mcc = other.mcc; this->mnc = other.mnc; this->twoDigitMnc = other.twoDigitMnc; return *this; };
 
-        bool operator==(const MccMnc &other) const { return this->mcc == other.mcc && this->mnc == other.mnc && this->twoDigitMnc == other.twoDigitMnc;; };
+        /**
+         * @brief Returns true if the mcc and mnc match other item
+         * 
+         * @param other 
+         * @return true 
+         * @return false 
+         */
+        bool isEqual(const MccMnc &other) const { return this->mcc == other.mcc && this->mnc == other.mnc; };
+
+        /**
+         * @brief Returns true if the mcc and mnc match other item
+         * 
+         * @param other 
+         * @return true 
+         * @return false 
+         */
+        bool operator==(const MccMnc &other) const { return this->mcc == other.mcc && this->mnc == other.mnc; };
+
 
         /**
          * @brief Clear the value to mcc = 0, mnc = 0, twoDigitMnc = false
@@ -199,6 +210,16 @@ public:
         PLMNList &operator=(const PLMNList &other);
 
         /**
+         * @brief Returns true if two lists are equal. Items need to be in the same order to be considered equal.
+         * 
+         * @param other 
+         * @return true 
+         * @return false 
+         */
+        bool isEqual(const PLMNList &other) const;
+
+        
+        /**
          * @brief Clear the list. This makes it "FFFFFFFFFFFFFFFFFFFFFFFF" as a string.
          */
         void clear();
@@ -233,7 +254,7 @@ public:
          * @param index 0-based index. Must be 0 <= index < kPLMNListMaxEntries. Invalid values will crash.
          * @return MccMnc Copy of 
          */
-        MccMnc getAt(size_t index) const { return networks[index]; };
+        MccMnc getAt(size_t index) const { return entries[index]; };
 
         /**
          * 
@@ -267,8 +288,6 @@ public:
          */
         bool remove(size_t index);
 
-
-
         /**
          * @brief Convert to a string to 24 digit string containing a FPLMN list
          * 
@@ -277,15 +296,41 @@ public:
         String toString() const;
 
         /**
+         * @brief Converts to a comma-separated list of MCCMNC values
+         * 
+         * @return String 
+         */
+        String toCommaSeparatedMccMncString() const;
+
+        /**
          * @brief Set this object's value to a 24 digit string containing a FPLMN list
          * 
          * @param str 
          */
         void fromString(const char *str);
 
+        /**
+         * @brief Add United States AT&T to the list if it does not already exist
+         */
+        void add_US_ATT() { add(MccMnc("310410")); };
+
+        /**
+         * @brief Add United States AT&T to the list if it does not already exist
+         */
+        void add_US_TMobile() { add(MccMnc("310260")); };
+
+        /**
+         * @brief Add United States US Cellular to the list if it does not already exist. Note that this takes two entries!
+         */
+        void add_US_USCellular() { add(MccMnc("311580")); add(MccMnc("311588")); };
+
+        /**
+         * @brief Add United States Verizon to the list if it does not already exist
+         */
+        void add_US_Verizon() { add(MccMnc("311480")); };
 
     private:
-        MccMnc networks[kPLMNListMaxEntries];
+        MccMnc entries[kPLMNListMaxEntries];
     };
 
     /**
@@ -295,19 +340,37 @@ public:
      */
     static PLMN_RK &instance();
 
-    /**
-     * @brief Perform setup operations; call this from global application setup()
-     * 
-     * You typically use PLMN_RK::instance().setup();
-     */
-    void setup();
+#ifndef UNITTEST
+    void updateIfNecessary(std::function<void(PLMNList &list)> updaterFn);
+#endif // UNITTEST
 
+
+#ifndef UNITTEST
     /**
-     * @brief Perform application loop operations; call this from global application loop()
+     * @brief Get the FPLMNList from the SIM.
      * 
-     * You typically use PLMN_RK::instance().loop();
+     * @return PLMNList 
+     * 
+     * Cellular must be on for this call to be used.
      */
-    void loop();
+    bool readList(PLMNList &list);
+#endif // UNITTEST
+
+#ifndef UNITTEST
+    /**
+     * @brief Update the FPLMNList in the SIM.
+     * 
+     * @return PLMNList 
+     * 
+     * Cellular must be on for this call to be used.
+     */
+    bool updateList(const PLMNList &list);
+#endif // UNITTEST
+
+#ifndef UNITTEST
+    bool modemPowerOffOn();
+#endif // UNITTEST
+
 
     /**
      * @brief Locks the mutex that protects shared resources
@@ -353,6 +416,9 @@ protected:
      * This class is a singleton and cannot be copied
      */
     PLMN_RK& operator=(const PLMN_RK&) = delete;
+
+    static int readListCallback(int type, const char* buf, int len, PLMNList* param);
+
 
     /**
      * @brief Mutex to protect shared resources

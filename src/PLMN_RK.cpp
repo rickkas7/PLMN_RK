@@ -2,6 +2,8 @@
 
 PLMN_RK *PLMN_RK::_instance;
 
+static Logger _log("PLMN");
+
 // [static]
 PLMN_RK &PLMN_RK::instance() {
     if (!_instance) {
@@ -16,12 +18,96 @@ PLMN_RK::PLMN_RK() {
 PLMN_RK::~PLMN_RK() {
 }
 
-void PLMN_RK::setup() {
-}
+#ifndef UNITTEST
+void PLMN_RK::updateIfNecessary(std::function<void(PLMNList &list)> updaterFn) {
+    PLMN_RK::PLMNList origList;
+    PLMN_RK::instance().readList(origList);
+    _log.info("PLMN at boot %s", origList.toCommaSeparatedMccMncString().c_str());
 
-void PLMN_RK::loop() {
-    // Put your code to run during the application thread loop here
+    PLMN_RK::PLMNList updatedList(origList);
+
+    updaterFn(updatedList);
+    
+    if (!updatedList.isEqual(origList)) {
+        _log.info("about to updateList %s", updatedList.toCommaSeparatedMccMncString().c_str());
+
+        PLMN_RK::instance().updateList(updatedList);
+    
+        _log.info("power cycle modem");
+        PLMN_RK::instance().modemPowerOffOn();    
+    }
+    else {
+        _log.info("list unchanged");
+    }
 }
+#endif // UNITTEST
+
+
+
+#ifndef UNITTEST
+bool PLMN_RK::readList(PLMN_RK::PLMNList &list) {
+    bool result = false;
+
+    int res = Cellular.command(readListCallback, &list, 10000, "AT+CRSM = 176,28539,0,0,12\r\n");
+    if (res == RESP_OK) {
+        result = true;
+    }
+
+    return result;
+}
+#endif // UNITTEST
+
+#ifndef UNITTEST
+// [static] 
+int PLMN_RK::readListCallback(int type, const char* buf, int len, PLMNList* param) {
+    if (type == TYPE_PLUS) {
+        int start = -1, end = -1;
+
+        for(int ii = 0; ii < len; ii++) {
+            if (buf[ii] == '"') {
+                if (start == -1) {
+                    start = ii + 1;
+                }
+                else
+                if (end == -1) {
+                    end = ii;
+                }
+            }
+        }
+        if (start >= 0 && end >= 0) {
+            String s(&buf[start], end - start);
+            param->fromString(s);
+        }
+    }
+    return WAIT;
+}
+#endif // UNITTEST
+
+#ifndef UNITTEST
+bool PLMN_RK::updateList(const PLMNList &list) {
+    bool result = false;
+
+    int res = Cellular.command(10000, "AT+CRSM=214,28539,0,0,12,\"%s\"\r\n", list.toString().c_str());
+    if (res == RESP_OK) {
+        result = true;
+    }
+
+    return result;
+}
+#endif // UNITTEST
+
+#ifndef UNITTEST
+bool PLMN_RK::modemPowerOffOn() {
+    bool result = true;
+
+    Cellular.off();
+    waitFor(Cellular.isOff, 10000);
+    Cellular.on();
+    waitFor(Cellular.isOn, 10000);
+
+    return result;
+}
+#endif // UNITTEST
 
 
 //
@@ -119,23 +205,35 @@ void PLMN_RK::MccMnc::fromPLMN(const char *str) {
 //
 // PLMNList
 //
+
+
 PLMN_RK::PLMNList &PLMN_RK::PLMNList::operator=(const PLMNList &other) {
     for(size_t ii = 0; ii < kPLMNListMaxEntries; ii++) {
-        networks[ii] = other.networks[ii];
+        entries[ii] = other.entries[ii];
     }
     return *this;
 }
 
+bool PLMN_RK::PLMNList::isEqual(const PLMNList &other) const{
+    for(size_t ii = 0; ii < kPLMNListMaxEntries; ii++) {
+        if (entries[ii].isEqual(other.entries[ii])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+
 
 void PLMN_RK::PLMNList::clear() {
     for(size_t ii = 0; ii < kPLMNListMaxEntries; ii++) {
-        networks[ii].clear();
+        entries[ii].clear();
     }
 }
 
 bool PLMN_RK::PLMNList::isClear() const {
     for(size_t ii = 0; ii < kPLMNListMaxEntries; ii++) {
-        if (!networks[ii].isClear()) {
+        if (!entries[ii].isClear()) {
             return false;
         }
     }
@@ -146,7 +244,7 @@ size_t PLMN_RK::PLMNList::getNumEntries() const {
     size_t result = 0;
 
     for(size_t ii = 0; ii < kPLMNListMaxEntries; ii++) {
-        if (!networks[ii].isClear()) {
+        if (!entries[ii].isClear()) {
             result++;
         }
     }
@@ -156,7 +254,7 @@ size_t PLMN_RK::PLMNList::getNumEntries() const {
 
 bool PLMN_RK::PLMNList::contains(MccMnc value) const {
     for(size_t ii = 0; ii < kPLMNListMaxEntries; ii++) {
-        if (networks[ii] == value) {
+        if (entries[ii] == value) {
             return true;
         }
     }
@@ -166,8 +264,8 @@ bool PLMN_RK::PLMNList::contains(MccMnc value) const {
 bool PLMN_RK::PLMNList::add(MccMnc value) {
     if (!contains(value)) {
         for(size_t ii = 0; ii < kPLMNListMaxEntries; ii++) {
-            if (networks[ii].isClear()) {
-                networks[ii] = value;
+            if (entries[ii].isClear()) {
+                entries[ii] = value;
                 return true;
             }
         }
@@ -179,7 +277,7 @@ bool PLMN_RK::PLMNList::add(MccMnc value) {
 
 ssize_t PLMN_RK::PLMNList::findIndex(MccMnc value) const {
     for(size_t ii = 0; ii < kPLMNListMaxEntries; ii++) {
-        if (networks[ii] == value) {
+        if (entries[ii] == value) {
             return ii;
         }
     }
@@ -203,9 +301,9 @@ bool PLMN_RK::PLMNList::remove(size_t index) {
         return false;
     }
     for(size_t ii = index; ii < (kPLMNListMaxEntries - 1); ii++) {
-        networks[ii] = networks[ii + 1];
+        entries[ii] = entries[ii + 1];
     }
-    networks[kPLMNListMaxEntries -1].clear();
+    entries[kPLMNListMaxEntries -1].clear();
 
     return true;
 }
@@ -215,19 +313,34 @@ String PLMN_RK::PLMNList::toString() const {
     String result;
 
     for(size_t ii = 0; ii < kPLMNListMaxEntries; ii++) {
-        result += networks[ii].toPLMN();
+        result += entries[ii].toPLMN();
+    }
+
+    return result;
+}
+
+String PLMN_RK::PLMNList::toCommaSeparatedMccMncString() const {
+    String result;
+
+    size_t numEntries = getNumEntries();
+
+    for(size_t ii = 0; ii < numEntries; ii++) {
+        result += entries[ii].toString();
+
+        if (ii < (numEntries - 1)) {
+            result += String(", ");
+        }
     }
 
     return result;
 }
 
 
-
 void PLMN_RK::PLMNList::fromString(const char *str) {
     if (str && strlen(str) == kPLMNListSize) {
         for(size_t ii = 0; ii < kPLMNListMaxEntries; ii++) {
             String s(&str[ii * kPLMNSize], kPLMNSize);
-            networks[ii].fromPLMN(s);
+            entries[ii].fromPLMN(s);
         }
     }
 }
