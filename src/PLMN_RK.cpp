@@ -32,9 +32,9 @@ void PLMN_RK::updateIfNecessary(std::function<void(PLMNList &list)> updaterFn) {
         _log.info("about to updateList %s", updatedList.toCommaSeparatedMccMncString().c_str());
 
         PLMN_RK::instance().updateList(updatedList);
-    
+ 
         _log.info("power cycle modem");
-        PLMN_RK::instance().modemPowerOffOn();    
+        PLMN_RK::instance().resetModemAndSim();    
     }
     else {
         _log.info("list unchanged");
@@ -97,13 +97,21 @@ bool PLMN_RK::updateList(const PLMNList &list) {
 #endif // UNITTEST
 
 #ifndef UNITTEST
-bool PLMN_RK::modemPowerOffOn() {
+bool PLMN_RK::resetModemAndSim() {
     bool result = true;
+
+    Cellular.command(20000, "AT+CFUN=16\r\n");
+    delay(1000);
 
     Cellular.off();
     waitFor(Cellular.isOff, 10000);
     Cellular.on();
     waitFor(Cellular.isOn, 10000);
+
+    PLMNList afterBoot;
+    
+    readList(afterBoot);
+    _log.info("PLMN after boot %s", afterBoot.toString().c_str());
 
     return result;
 }

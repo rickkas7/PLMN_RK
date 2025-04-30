@@ -21,7 +21,8 @@ void setup() {
     Log.info("cellular on");
 
     PLMN_RK::instance().updateIfNecessary([](PLMN_RK::PLMNList &list) {
-        list.add_US_ATT();
+        // list.add_US_ATT();
+        list.add_US_TMobile();
         // list.clear();    
     });
 

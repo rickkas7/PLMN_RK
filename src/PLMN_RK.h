@@ -368,7 +368,7 @@ public:
 #endif // UNITTEST
 
 #ifndef UNITTEST
-    bool modemPowerOffOn();
+    bool resetModemAndSim();
 #endif // UNITTEST
 
 
