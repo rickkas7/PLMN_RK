@@ -62,20 +62,24 @@ void testMccMnc() {
 		assertInt("t3b mnc", t3b.getMnc(), 44);
 		assertInt("t3b", t3b == t3, 1);
 
+		assertStr("t3", t3.toPLMN(), "04F444");
+
+
 		// 04F444 -> 40444 -> Spice telecomm
 	}
 	{
-		PLMN_RK::MccMnc t4(43, 508);
-		assertInt("t4 mcc", t4.getMcc(), 43);
-		assertInt("t4 mnc", t4.getMnc(), 508);
-		assertStr("t4", t4.toString(), "043508");
+		PLMN_RK::MccMnc t4(405, 803);
+		assertInt("t4 mcc", t4.getMcc(), 405);
+		assertInt("t4 mnc", t4.getMnc(), 803);
+		assertStr("t4", t4.toString(), "405803");
 
 
-		PLMN_RK::MccMnc t4b("043508");
-		assertInt("t4b mcc", t4b.getMcc(), 43);
-		assertInt("t4b mnc", t4b.getMnc(), 508);
+		PLMN_RK::MccMnc t4b("405803");
+		assertInt("t4b mcc", t4b.getMcc(), 405);
+		assertInt("t4b mnc", t4b.getMnc(), 803);
 		assertInt("t4b", t4b == t4, 1);
 
+		assertStr("t4", t4.toPLMN(), "043508");
 
 		// 043508 -> 405803 -> Airtel
 	}
@@ -90,7 +94,8 @@ void testMccMnc() {
 		assertInt("t5b mnc", t5b.getMnc(), 820);
 		assertInt("t5b", t5b == t5, 1);
 
-		// 40528 - > 405820 -> uninor
+		assertStr("t5", t5.toPLMN(), "040528");
+		// 040528 - > 405820 -> uninor
 	}
 	{
 		PLMN_RK::MccMnc t6(405, 34);
@@ -103,7 +108,8 @@ void testMccMnc() {
 		assertInt("t6b mnc", t6b.getMnc(), 34);
 		assertInt("t6b", t6b == t6, 1);
 
-		// 0044530 -> 405034 -> unknown
+		// 044530 -> 405034 -> unknown
+		assertStr("t6", t6.toPLMN(), "044530");
 	}
 }
 

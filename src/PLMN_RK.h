@@ -52,9 +52,13 @@ public:
 
         bool isClear() const { return mcc == 0 && mnc == 0; };
 
-        String toString();
+        String toString() const;
 
         void fromString(const char *str);
+
+        String toPLMN() const;
+
+        void fromPLMN(const char *str);
 
 
     private:
@@ -63,13 +67,13 @@ public:
         bool twoDigitMnc = false;
     };
 
-    class FPLMN {
+    class PLMNList {
     public:
-        FPLMN() {};
-        virtual ~FPLMN() {};
+        PLMNList() {};
+        virtual ~PLMNList() {};
 
-        FPLMN(const FPLMN &other) { *this = other; };
-        FPLMN &operator=(const FPLMN &other);
+        PLMNList(const PLMNList &other) { *this = other; };
+        PLMNList &operator=(const PLMNList &other);
 
         void clear();
 
