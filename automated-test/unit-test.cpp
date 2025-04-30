@@ -197,6 +197,18 @@ void testList() {
 		assertInt("", list.getNumEntries(), 2);
 		assertStr("", list.toString(), "13001405F539FFFFFFFFFFFF");
 
+
+		assertInt("", list.add(PLMN_RK::MccMnc("405820")), 1);
+		assertInt("", list.getNumEntries(), 3);
+		assertStr("", list.toString(), "13001405F539040528FFFFFF");
+
+		assertInt("", list.add(PLMN_RK::MccMnc("405803")), 1);
+		assertInt("", list.getNumEntries(), 4);
+		assertStr("", list.toString(), "13001405F539040528043508");
+
+		assertInt("", list.add(PLMN_RK::MccMnc("40444")), 0);
+		assertInt("", list.getNumEntries(), 4);
+
 	}
 
 }
