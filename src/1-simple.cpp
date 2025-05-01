@@ -23,6 +23,7 @@ void setup() {
     PLMN_RK::instance().updateIfNecessary([](PLMN_RK::PLMNList &list) {
         // list.add_US_ATT();
         list.add_US_TMobile();
+        // list.add("310410");
         // list.clear();    
     });
 

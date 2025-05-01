@@ -267,6 +267,15 @@ public:
         bool add(MccMnc value);
 
         /**
+         * @brief Add a MCC-MNC string (5 or 6 ASCII digits of the form 310410)if it does not exist and there is space
+         * 
+         * @param str 
+         * @return true Operation was successful
+         * @return false List was full
+         */
+        bool add(const char *str) { return add(MccMnc(str)); };
+
+        /**
          * @brief Find the index (0-based) of a list item from its MCC-MNC
          * 
          * @param value 
@@ -341,6 +350,17 @@ public:
     static PLMN_RK &instance();
 
 #ifndef UNITTEST
+    /**
+     * @brief Utility function to get the FPLMN and update it only if necessary
+     * 
+     * @param updaterFn Function to call, typically a C++11 lambda.
+     * 
+     * See example 1-simple.cpp for how to use this function
+     * 
+     * Updater function prototype:
+     * 
+     * void updater(PLMN_RK::PLMNList &list)
+     */
     void updateIfNecessary(std::function<void(PLMNList &list)> updaterFn);
 #endif // UNITTEST
 
@@ -368,6 +388,12 @@ public:
 #endif // UNITTEST
 
 #ifndef UNITTEST
+    /**
+     * @brief Function to reset the SIM card and power cycle the modem
+     * 
+     * @return true 
+     * @return false 
+     */
     bool resetModemAndSim();
 #endif // UNITTEST
 
@@ -417,8 +443,16 @@ protected:
      */
     PLMN_RK& operator=(const PLMN_RK&) = delete;
 
+    /**
+     * @brief Internal function used by readList as the callback to Cellular.command
+     * 
+     * @param type 
+     * @param buf 
+     * @param len 
+     * @param param 
+     * @return int 
+     */
     static int readListCallback(int type, const char* buf, int len, PLMNList* param);
-
 
     /**
      * @brief Mutex to protect shared resources
