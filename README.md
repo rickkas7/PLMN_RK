@@ -6,13 +6,15 @@
 - License: MIT
 - Full browsable API documentation available [here](https://rickkas7.github.io/PLMN_RK/index.html) as well as in the docs directory 
 
-
-
 These helper functions are used to convert between MCC-MNC (Mobile Country Code - Mobile Network Code) and
 PLMN format. There are also functions for manipulating the FPLMN (Forbidden Public Land Mobile Network) list in the SIM. 
 
 **FPLMN functions are not working in this version of the code**. They appear to be accepted by the cellular modem, but
-the change never takes effect and do not appear to be saved on the SIM. I do not know why this is.
+the change never takes effect and do not appear to be saved on the SIM. I do not know why this is, and it makes this code
+essentially useless, but I published it in case any one knows the reason why.
+
+Because it does not work, it is not released as a Particle community library, though you could manually include it 
+in your project as a [Workbench pseudo-library](https://docs.particle.io/getting-started/device-os/firmware-libraries/#workbench-pseudo-libraries).
 
 ## FPLMN
 
